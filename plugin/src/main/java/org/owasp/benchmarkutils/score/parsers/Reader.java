@@ -34,6 +34,7 @@ import org.owasp.benchmarkutils.score.parsers.sarif.BanditReader;
 import org.owasp.benchmarkutils.score.parsers.sarif.CodeQLReader;
 import org.owasp.benchmarkutils.score.parsers.sarif.ContrastScanReader;
 import org.owasp.benchmarkutils.score.parsers.sarif.DatadogSastReader;
+import org.owasp.benchmarkutils.score.parsers.sarif.DatadogSaistReader;
 import org.owasp.benchmarkutils.score.parsers.sarif.FortifySarifReader;
 import org.owasp.benchmarkutils.score.parsers.sarif.PTAIReader;
 import org.owasp.benchmarkutils.score.parsers.sarif.PrecautionReader;
@@ -73,6 +74,7 @@ public abstract class Reader {
                 new CrashtestReader(),
                 new DatadogReader(),
                 new DatadogSastReader(),
+                new DatadogSaistReader(),
                 new FaastReader(),
                 new FindbugsReader(),
                 new FluidAttacksReader(),
