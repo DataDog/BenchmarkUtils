@@ -29,7 +29,7 @@ import org.owasp.benchmarkutils.score.parsers.Reader;
  * https://github.com/DataDog/datadog-saist-experiment
  */
 public class DatadogSaistReader extends Reader {
-    private static final String DATADOG_SAIST_TOOL_NAME = "datadog-saist";
+    private static final String DATADOG_SAIST_TOOL_NAME = "datadog-ai-static-analyzer";
 
     @Override
     public boolean canRead(ResultFile resultFile) {
