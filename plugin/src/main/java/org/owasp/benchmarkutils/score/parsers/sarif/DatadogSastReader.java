@@ -66,6 +66,8 @@ public class DatadogSastReader extends SarifReader {
         // SQL Injection - CWE-89
         addRuleMapping(mappings, "sql-injection", 89);
         addRuleMapping(mappings, "variable-sql-statement-injection", 89);
+        addRuleMapping(mappings, "sql-string-concatenation", 89);
+        addRuleMapping(mappings, "sql-format-string", 89);
 
         // Command Injection - CWE-78
         addRuleMapping(mappings, "command-injection", 78);
