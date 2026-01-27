@@ -16,6 +16,9 @@
  */
 package org.owasp.benchmarkutils.score.parsers.sarif;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.owasp.benchmarkutils.score.BenchmarkScore;
@@ -30,6 +33,80 @@ import org.owasp.benchmarkutils.score.parsers.Reader;
  */
 public class DatadogSaistReader extends Reader {
     private static final String DATADOG_SAIST_TOOL_NAME = "datadog-ai-static-analyzer";
+
+    /** Enumeration of CWE + category IDs for SAIST rules. */
+    private enum Type {
+        COMMAND_INJECTION(77),      // CWE-77
+        SQL_INJECTION(89),          // CWE-89
+        XPATH_INJECTION(91),        // CWE-91
+        XSS(79),                    // CWE-79
+        LDAP_INJECTION(90),         // CWE-90
+        PATH_TRAVERSAL(22),         // CWE-22
+        TRUST_BOUNDARY(501),        // CWE-501
+        WEAK_HASH(328),             // CWE-328
+        INSECURE_COOKIE(614),       // CWE-614
+        BROKEN_CRYPTO(327),         // CWE-327
+        ACCESS_CONTROL(284),        // CWE-284
+        CODE_INJECTION(94),         // CWE-94
+        DESERIALIZATION(502);       // CWE-502
+
+        private final int number;
+        private final String id;
+
+        Type(final int number) {
+            this.number = number;
+            this.id = "saist-" + name().toLowerCase().replaceAll("_", "-");
+        }
+    }
+
+    /** Static mapping of all SAIST rule IDs to their corresponding Type. */
+    private static final Map<String, Type> RULE_ID_TO_TYPE = new HashMap<>();
+    static {
+        // Java rules
+        RULE_ID_TO_TYPE.put("datadog/java-cmdi", Type.COMMAND_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/java-sqli", Type.SQL_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/java-xpathi", Type.XPATH_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/java-xss", Type.XSS);
+        RULE_ID_TO_TYPE.put("datadog/java-ldapi", Type.LDAP_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/java-pathtraversal", Type.PATH_TRAVERSAL);
+        RULE_ID_TO_TYPE.put("datadog/java-trustboundary", Type.TRUST_BOUNDARY);
+        RULE_ID_TO_TYPE.put("datadog/java-weakhash", Type.WEAK_HASH);
+        RULE_ID_TO_TYPE.put("datadog/java-insecurecookie", Type.INSECURE_COOKIE);
+        RULE_ID_TO_TYPE.put("datadog/java-brokencrypto", Type.BROKEN_CRYPTO);
+        RULE_ID_TO_TYPE.put("datadog/java-accesscontrol", Type.ACCESS_CONTROL);
+        RULE_ID_TO_TYPE.put("datadog/java-codei", Type.CODE_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/java-deserialization", Type.DESERIALIZATION);
+
+        // Go rules
+        RULE_ID_TO_TYPE.put("datadog/go-cmdi", Type.COMMAND_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/go-sqli", Type.SQL_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/go-xpathi", Type.XPATH_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/go-xss", Type.XSS);
+        RULE_ID_TO_TYPE.put("datadog/go-ldapi", Type.LDAP_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/go-pathtraversal", Type.PATH_TRAVERSAL);
+        RULE_ID_TO_TYPE.put("datadog/go-trustboundary", Type.TRUST_BOUNDARY);
+        RULE_ID_TO_TYPE.put("datadog/go-weakhash", Type.WEAK_HASH);
+        RULE_ID_TO_TYPE.put("datadog/go-insecurecookie", Type.INSECURE_COOKIE);
+        RULE_ID_TO_TYPE.put("datadog/go-brokencrypto", Type.BROKEN_CRYPTO);
+        RULE_ID_TO_TYPE.put("datadog/go-accesscontrol", Type.ACCESS_CONTROL);
+        RULE_ID_TO_TYPE.put("datadog/go-codei", Type.CODE_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/go-deserialization", Type.DESERIALIZATION);
+
+        // Python rules
+        RULE_ID_TO_TYPE.put("datadog/python-cmdi", Type.COMMAND_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/python-sqli", Type.SQL_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/python-xpathi", Type.XPATH_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/python-xss", Type.XSS);
+        RULE_ID_TO_TYPE.put("datadog/python-ldapi", Type.LDAP_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/python-pathtraversal", Type.PATH_TRAVERSAL);
+        RULE_ID_TO_TYPE.put("datadog/python-trustboundary", Type.TRUST_BOUNDARY);
+        RULE_ID_TO_TYPE.put("datadog/python-weakhash", Type.WEAK_HASH);
+        RULE_ID_TO_TYPE.put("datadog/python-insecurecookie", Type.INSECURE_COOKIE);
+        RULE_ID_TO_TYPE.put("datadog/python-brokencrypto", Type.BROKEN_CRYPTO);
+        RULE_ID_TO_TYPE.put("datadog/python-accesscontrol", Type.ACCESS_CONTROL);
+        RULE_ID_TO_TYPE.put("datadog/python-codei", Type.CODE_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/python-deserialization", Type.DESERIALIZATION);
+    }
 
     @Override
     public boolean canRead(ResultFile resultFile) {
@@ -63,25 +140,7 @@ public class DatadogSaistReader extends Reader {
      * @return a Type enum containing the CWE number and category id, or null if unmapped
      */
     private Type getTypeFromRuleId(String ruleId) {
-        // Java rules
-        if ("datadog/java-cmdi".equals(ruleId)) return Type.COMMAND_INJECTION; // CWE-77
-        if ("datadog/java-sqli".equals(ruleId)) return Type.SQL_INJECTION;     // CWE-89
-        if ("datadog/java-xpathi".equals(ruleId)) return Type.XPATH_INJECTION; // CWE-91
-        if ("datadog/java-xss".equals(ruleId))  return Type.XSS;               // CWE-79
-
-        // Go rules
-        if ("datadog/go-cmdi".equals(ruleId))   return Type.COMMAND_INJECTION; // CWE-77
-        if ("datadog/go-sqli".equals(ruleId))   return Type.SQL_INJECTION;     // CWE-89
-        if ("datadog/go-xpathi".equals(ruleId)) return Type.XPATH_INJECTION;   // CWE-91
-        if ("datadog/go-xss".equals(ruleId))    return Type.XSS;               // CWE-79
-
-        // Python rules
-        if ("datadog/python-cmdi".equals(ruleId))   return Type.COMMAND_INJECTION; // CWE-77
-        if ("datadog/python-sqli".equals(ruleId))   return Type.SQL_INJECTION;     // CWE-89
-        if ("datadog/python-xpathi".equals(ruleId)) return Type.XPATH_INJECTION;   // CWE-91
-        if ("datadog/python-xss".equals(ruleId))    return Type.XSS;               // CWE-79
-
-        return null;
+        return RULE_ID_TO_TYPE.get(ruleId);
     }
 
     /**
@@ -237,21 +296,5 @@ public class DatadogSaistReader extends Reader {
             }
         }
         return tr;
-    }
-
-    /** Enumeration of CWE + category IDs for SAIST rules. */
-    private enum Type {
-        COMMAND_INJECTION(77),  // CWE-77
-        SQL_INJECTION(89),      // CWE-89
-        XPATH_INJECTION(91),    // CWE-91
-        XSS(79);                // CWE-79
-
-        private final int number;
-        private final String id;
-
-        Type(final int number) {
-            this.number = number;
-            this.id = "saist-" + name().toLowerCase().replaceAll("_", "-");
-        }
     }
 }
