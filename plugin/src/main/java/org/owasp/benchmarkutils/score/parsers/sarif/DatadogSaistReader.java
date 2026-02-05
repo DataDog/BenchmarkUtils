@@ -34,11 +34,13 @@ import org.owasp.benchmarkutils.score.parsers.Reader;
 public class DatadogSaistReader extends Reader {
     private static final String DATADOG_SAIST_TOOL_NAME = "datadog-ai-static-analyzer";
 
-    /** Enumeration of CWE + category IDs for SAIST rules. */
+    /** Enumeration of CWE + category IDs for SAIST rules.
+     *  CWE numbers must match the benchmark expectedresults CSV files.
+     */
     private enum Type {
-        COMMAND_INJECTION(77),      // CWE-77
+        COMMAND_INJECTION(78),      // CWE-78 (OS Command Injection - matches benchmark)
         SQL_INJECTION(89),          // CWE-89
-        XPATH_INJECTION(91),        // CWE-91
+        XPATH_INJECTION(643),       // CWE-643 (XPath Injection - matches benchmark)
         XSS(79),                    // CWE-79
         LDAP_INJECTION(90),         // CWE-90
         PATH_TRAVERSAL(22),         // CWE-22
@@ -48,7 +50,8 @@ public class DatadogSaistReader extends Reader {
         BROKEN_CRYPTO(327),         // CWE-327
         ACCESS_CONTROL(284),        // CWE-284
         CODE_INJECTION(94),         // CWE-94
-        DESERIALIZATION(502);       // CWE-502
+        DESERIALIZATION(502),       // CWE-502
+        WEAK_RANDOMNESS(330);       // CWE-330 (Weak Randomness - matches benchmark)
 
         private final int number;
         private final String id;
@@ -61,6 +64,19 @@ public class DatadogSaistReader extends Reader {
 
     /** Static mapping of all SAIST rule IDs to their corresponding Type. */
     private static final Map<String, Type> RULE_ID_TO_TYPE = new HashMap<>();
+
+    /**
+     * CWE normalization map: converts API CWEs to benchmark-expected CWEs.
+     * The API uses different CWE numbers than the benchmark expects for some vulnerabilities.
+     */
+    private static final Map<Integer, Integer> CWE_NORMALIZATION = new HashMap<>();
+    static {
+        // API uses CWE-77 (Command Injection), benchmark expects CWE-78 (OS Command Injection)
+        CWE_NORMALIZATION.put(77, 78);
+        // API uses CWE-91 (XML Injection), benchmark expects CWE-643 (XPath Injection)
+        CWE_NORMALIZATION.put(91, 643);
+    }
+
     static {
         // Java rules
         RULE_ID_TO_TYPE.put("datadog/java-cmdi", Type.COMMAND_INJECTION);
@@ -76,6 +92,7 @@ public class DatadogSaistReader extends Reader {
         RULE_ID_TO_TYPE.put("datadog/java-accesscontrol", Type.ACCESS_CONTROL);
         RULE_ID_TO_TYPE.put("datadog/java-codei", Type.CODE_INJECTION);
         RULE_ID_TO_TYPE.put("datadog/java-deserialization", Type.DESERIALIZATION);
+        RULE_ID_TO_TYPE.put("datadog/java-weakrand", Type.WEAK_RANDOMNESS);
 
         // Go rules
         RULE_ID_TO_TYPE.put("datadog/go-cmdi", Type.COMMAND_INJECTION);
@@ -91,6 +108,7 @@ public class DatadogSaistReader extends Reader {
         RULE_ID_TO_TYPE.put("datadog/go-accesscontrol", Type.ACCESS_CONTROL);
         RULE_ID_TO_TYPE.put("datadog/go-codei", Type.CODE_INJECTION);
         RULE_ID_TO_TYPE.put("datadog/go-deserialization", Type.DESERIALIZATION);
+        RULE_ID_TO_TYPE.put("datadog/go-weakrand", Type.WEAK_RANDOMNESS);
 
         // Python rules
         RULE_ID_TO_TYPE.put("datadog/python-cmdi", Type.COMMAND_INJECTION);
@@ -106,6 +124,7 @@ public class DatadogSaistReader extends Reader {
         RULE_ID_TO_TYPE.put("datadog/python-accesscontrol", Type.ACCESS_CONTROL);
         RULE_ID_TO_TYPE.put("datadog/python-codei", Type.CODE_INJECTION);
         RULE_ID_TO_TYPE.put("datadog/python-deserialization", Type.DESERIALIZATION);
+        RULE_ID_TO_TYPE.put("datadog/python-weakrand", Type.WEAK_RANDOMNESS);
     }
 
     @Override
@@ -144,7 +163,19 @@ public class DatadogSaistReader extends Reader {
     }
 
     /**
+     * Normalize a CWE number from API format to benchmark-expected format.
+     * Some CWEs used by the API differ from what the benchmark expects.
+     *
+     * @param cwe the original CWE number
+     * @return the normalized CWE number (unchanged if no mapping exists)
+     */
+    private int normalizeCwe(int cwe) {
+        return CWE_NORMALIZATION.getOrDefault(cwe, cwe);
+    }
+
+    /**
      * Try to extract CWE from a SARIF result object's properties or nested rule metadata.
+     * The extracted CWE is normalized to match benchmark expectations.
      *
      * @param violation SARIF result object
      * @return CWE number or 0 if none found
@@ -162,13 +193,13 @@ public class DatadogSaistReader extends Reader {
                             String cweStr = tag.replaceAll("(?i)cwe[-:]?", "")
                                                .replaceAll("[^0-9]", "");
                             if (!cweStr.isEmpty()) {
-                                return Integer.parseInt(cweStr);
+                                return normalizeCwe(Integer.parseInt(cweStr));
                             }
                         }
                     }
                 }
                 if (properties.has("cwe")) {
-                    return properties.optInt("cwe", 0);
+                    return normalizeCwe(properties.optInt("cwe", 0));
                 }
             }
         } catch (Exception ignore) {
@@ -181,7 +212,7 @@ public class DatadogSaistReader extends Reader {
                 if (rule.has("properties")) {
                     JSONObject ruleProps = rule.getJSONObject("properties");
                     if (ruleProps.has("cwe")) {
-                        return ruleProps.optInt("cwe", 0);
+                        return normalizeCwe(ruleProps.optInt("cwe", 0));
                     }
                 }
             }
