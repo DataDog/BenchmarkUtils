@@ -92,7 +92,7 @@ public class DatadogSaistReader extends Reader {
         RULE_ID_TO_TYPE.put("datadog/java-accesscontrol", Type.ACCESS_CONTROL);
         RULE_ID_TO_TYPE.put("datadog/java-codei", Type.CODE_INJECTION);
         RULE_ID_TO_TYPE.put("datadog/java-deserialization", Type.DESERIALIZATION);
-        RULE_ID_TO_TYPE.put("datadog/java-weakrand", Type.WEAK_RANDOMNESS);
+        RULE_ID_TO_TYPE.put("datadog/java-weakrandomness", Type.WEAK_RANDOMNESS);
 
         // Go rules
         RULE_ID_TO_TYPE.put("datadog/go-cmdi", Type.COMMAND_INJECTION);
@@ -108,7 +108,7 @@ public class DatadogSaistReader extends Reader {
         RULE_ID_TO_TYPE.put("datadog/go-accesscontrol", Type.ACCESS_CONTROL);
         RULE_ID_TO_TYPE.put("datadog/go-codei", Type.CODE_INJECTION);
         RULE_ID_TO_TYPE.put("datadog/go-deserialization", Type.DESERIALIZATION);
-        RULE_ID_TO_TYPE.put("datadog/go-weakrand", Type.WEAK_RANDOMNESS);
+        RULE_ID_TO_TYPE.put("datadog/go-weakrandomness", Type.WEAK_RANDOMNESS);
 
         // Python rules
         RULE_ID_TO_TYPE.put("datadog/python-cmdi", Type.COMMAND_INJECTION);
@@ -124,7 +124,23 @@ public class DatadogSaistReader extends Reader {
         RULE_ID_TO_TYPE.put("datadog/python-accesscontrol", Type.ACCESS_CONTROL);
         RULE_ID_TO_TYPE.put("datadog/python-codei", Type.CODE_INJECTION);
         RULE_ID_TO_TYPE.put("datadog/python-deserialization", Type.DESERIALIZATION);
-        RULE_ID_TO_TYPE.put("datadog/python-weakrand", Type.WEAK_RANDOMNESS);
+        RULE_ID_TO_TYPE.put("datadog/python-weakrandomness", Type.WEAK_RANDOMNESS);
+
+        // C# rules
+        RULE_ID_TO_TYPE.put("datadog/csharp-cmdi", Type.COMMAND_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/csharp-sqli", Type.SQL_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/csharp-xpathi", Type.XPATH_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/csharp-xss", Type.XSS);
+        RULE_ID_TO_TYPE.put("datadog/csharp-ldapi", Type.LDAP_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/csharp-pathtraversal", Type.PATH_TRAVERSAL);
+        RULE_ID_TO_TYPE.put("datadog/csharp-trustboundary", Type.TRUST_BOUNDARY);
+        RULE_ID_TO_TYPE.put("datadog/csharp-weakhash", Type.WEAK_HASH);
+        RULE_ID_TO_TYPE.put("datadog/csharp-insecurecookie", Type.INSECURE_COOKIE);
+        RULE_ID_TO_TYPE.put("datadog/csharp-brokencrypto", Type.BROKEN_CRYPTO);
+        RULE_ID_TO_TYPE.put("datadog/csharp-accesscontrol", Type.ACCESS_CONTROL);
+        RULE_ID_TO_TYPE.put("datadog/csharp-codei", Type.CODE_INJECTION);
+        RULE_ID_TO_TYPE.put("datadog/csharp-deserialization", Type.DESERIALIZATION);
+        RULE_ID_TO_TYPE.put("datadog/csharp-weakrandomness", Type.WEAK_RANDOMNESS);
     }
 
     @Override
